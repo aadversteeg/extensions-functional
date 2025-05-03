@@ -1,0 +1,31 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: |
+          6.0.x
+          7.0.x
+          8.0.x
+    
+    - name: Restore dependencies
+      run: dotnet restore src/extensions-functional.sln
+    
+    - name: Build
+      run: dotnet build src/extensions-functional.sln --configuration Release --no-restore
+    
+    - name: Test
+      run: dotnet test src/extensions-functional.sln --configuration Release --no-build --verbosity normal

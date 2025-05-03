@@ -1,0 +1,90 @@
+name: Publish to NuGet.org
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_id:
+        description: 'Release ID to publish (leave empty for latest)'
+        required: false
+        default: ''
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Get release assets
+      id: get_release
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          let releaseId = '${{ github.event.inputs.release_id }}';
+          let release;
+          
+          if (!releaseId) {
+            console.log('No release ID provided, fetching latest release');
+            const releases = await github.rest.repos.listReleases({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 1
+            });
+            
+            if (releases.data.length === 0) {
+              core.setFailed('No releases found');
+              return;
+            }
+            
+            release = releases.data[0];
+          } else {
+            console.log(`Fetching release with ID: ${releaseId}`);
+            release = await github.rest.repos.getRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: releaseId
+            });
+            release = release.data;
+          }
+          
+          console.log(`Using release: ${release.name} (ID: ${release.id})`);
+          core.setOutput('release_id', release.id);
+          core.setOutput('release_name', release.name);
+          core.setOutput('release_tag', release.tag_name);
+          
+          // Download all .nupkg assets
+          const downloadPromises = release.assets
+            .filter(asset => asset.name.endsWith('.nupkg') && !asset.name.endsWith('.snupkg'))
+            .map(async (asset) => {
+              console.log(`Downloading asset: ${asset.name}`);
+              const assetData = await github.rest.repos.getReleaseAsset({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                asset_id: asset.id,
+                headers: {
+                  accept: 'application/octet-stream'
+                }
+              });
+              
+              const fs = require('fs');
+              const path = require('path');
+              
+              if (!fs.existsSync('./packages')) {
+                fs.mkdirSync('./packages');
+              }
+              
+              const filePath = path.join('./packages', asset.name);
+              fs.writeFileSync(filePath, Buffer.from(assetData.data));
+              console.log(`Asset downloaded to: ${filePath}`);
+              return filePath;
+            });
+            
+          await Promise.all(downloadPromises);
+    
+    - name: Publish to NuGet.org
+      run: |
+        for package in ./packages/*.nupkg; do
+          echo "Publishing package: $package"
+          dotnet nuget push "$package" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+        done
