@@ -5,6 +5,8 @@
     <IsPackable>true</IsPackable>
     <Description>Extension methods for functional programming in .NET</Description>
     <PackageTags>functional;extensions;maybe;result;monads;option</PackageTags>
+    <!-- Suppress XML documentation warnings -->
+    <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
