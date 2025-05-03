@@ -58,20 +58,6 @@ dotnet build
 dotnet test
 ```
 
-### Publishing a New Version
-
-1. Create a new tag with the version number:
-   ```
-   git tag v1.0.0
-   git push origin v1.0.0
-   ```
-
-2. The GitHub Actions workflow will automatically:
-   - Build and test the code
-   - Generate NuGet packages
-   - Create a GitHub Release
-   - Publish packages to NuGet.org (when configured)
-
 ## License
 
 MIT
