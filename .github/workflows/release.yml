@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - v*.*.*
+      - 'v*.*.*'
 
 permissions:
   contents: write
@@ -14,43 +14,51 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: |
-          6.0.x
-          7.0.x
-          8.0.x
-    
-    - name: Restore dependencies
-      run: dotnet restore src/extensions-functional.sln
-    
-    - name: Build
-      run: dotnet build src/extensions-functional.sln --configuration Release --no-restore
-    
-    - name: Test
-      run: dotnet test src/extensions-functional.sln --configuration Release --no-build --verbosity normal
-    
-    - name: Extract version
-      id: extract_version
-      run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
-    
-    - name: Pack
-      run: dotnet pack src/extensions-functional.sln --no-build --configuration Release /p:Version=${{ steps.extract_version.outputs.VERSION }} --output ./packages
-    
-    - name: Create GitHub Release
-      id: create_release
-      uses: softprops/action-gh-release@v1
-      with:
-        draft: false
-        prerelease: ${{ contains(steps.extract_version.outputs.VERSION, '-') }}
-        name: Release ${{ steps.extract_version.outputs.VERSION }}
-        files: ./packages/*.nupkg
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  
-    # Uncomment this when ready to publish to NuGet.org
-    # - name: Publish to NuGet.org
-    #   run: dotnet nuget push ./packages/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Needed for GitVersion
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: |
+            6.0.x
+            7.0.x
+            8.0.x
+      
+      - name: Extract version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+      
+      - name: Restore dependencies
+        run: dotnet restore src/extensions-functional.sln
+      
+      - name: Build
+        run: dotnet build src/extensions-functional.sln --no-restore --configuration Release /p:Version=${{ steps.get_version.outputs.VERSION }}
+      
+      - name: Test
+        run: dotnet test src/extensions-functional.sln --no-build --configuration Release --verbosity normal
+      
+      - name: Pack
+        run: dotnet pack src/extensions-functional.sln --no-build --configuration Release /p:Version=${{ steps.get_version.outputs.VERSION }} --output ./packages
+        
+      - name: Debug Package Output
+        run: |
+          echo "Generated NuGet packages:"
+          ls -la ./packages/
+          echo "Package count: $(ls -1 ./packages/*.nupkg 2>/dev/null | wc -l)"
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-packages
+          path: ./packages/*.nupkg
+      
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Ave.Extensions.Functional ${{ steps.get_version.outputs.VERSION }}
+          files: ./packages/*.nupkg
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
