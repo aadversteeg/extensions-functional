@@ -11,9 +11,9 @@ namespace Ave.Extensions.Functional
 	public readonly struct Maybe<T>
 	{
 		private readonly bool _hasValue;
-		private readonly T _value;
+		private readonly T? _value;
 
-		private Maybe(bool hasValue, T value)
+		private Maybe(bool hasValue, T? value)
 		{
 			_hasValue = hasValue;
 			_value = value;
@@ -34,7 +34,7 @@ namespace Ave.Extensions.Functional
 				{
 					throw new InvalidOperationException("Property Value of Maybe cannot be accesses because the Maybe has no value.");
 				}
-				return _value; 
+				return _value!; 
 			}
 		}
 
@@ -61,14 +61,14 @@ namespace Ave.Extensions.Functional
 		/// This operator enables seamless conversion from values to Maybe instances,
 		/// making it more convenient to work with Maybe types in your code.
 		/// </remarks>
-		public static implicit operator Maybe<T>(T value)
+		public static implicit operator Maybe<T>(T? value)
 		{
 			if (value is Maybe<T> valueAsMaybe)
 			{
 				return valueAsMaybe;
 			}
 
-			return Maybe.From(value);
+			return Maybe.From(value!);
 		}
 
 		/// <summary>
@@ -76,7 +76,7 @@ namespace Ave.Extensions.Functional
 		/// </summary>
 		/// <param name="source">The value to wrap in a Maybe instance.</param>
 		/// <returns>A new Maybe instance containing the specified value.</returns>
-		public static Maybe<T> From(T source)
+		public static Maybe<T> From(T? source)
 		{
 			return new Maybe<T>(true, source);
 		}
@@ -93,7 +93,7 @@ namespace Ave.Extensions.Functional
 			if (HasNoValue)
 				return "(No Value)";
 
-			return _value.ToString();
+			return _value?.ToString() ?? "(null)";
 		}
 	}
 
@@ -108,6 +108,6 @@ namespace Ave.Extensions.Functional
 		/// <typeparam name="T">The type of the value to wrap in a Maybe.</typeparam>
 		/// <param name="value">The value to wrap in a Maybe instance.</param>
 		/// <returns>A new Maybe instance containing the specified value.</returns>
-		public static Maybe<T> From<T>(T value) => Maybe<T>.From(value);
+		public static Maybe<T> From<T>(T? value) => Maybe<T>.From(value);
 	}
 }

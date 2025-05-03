@@ -12,10 +12,10 @@ namespace Ave.Extensions.Functional
 	public struct Result<T,E> : IEquatable<Result<T,E>>
 	{
 		private readonly bool _isSuccess;
-		private readonly E _error;
-		private readonly T _value;
+		private readonly E? _error;
+		private readonly T? _value;
 
-		private Result(bool isSuccess, T value, E error)
+		private Result(bool isSuccess, T? value, E? error)
 		{
 			_isSuccess = isSuccess;
 			_value = value;
@@ -45,7 +45,7 @@ namespace Ave.Extensions.Functional
 					throw new InvalidOperationException("Property Error of Result cannot be accessed because Result is successful.");
 				}
 
-				return _error; 
+				return _error!; 
 			} 
 		}
 
@@ -62,7 +62,7 @@ namespace Ave.Extensions.Functional
 					throw new InvalidOperationException("Property Value of Result cannot be accessed because Result is failure.");
 				}
 
-				return _value;
+				return _value!;
 			}
 		}
 
@@ -122,7 +122,7 @@ namespace Ave.Extensions.Functional
 		/// </summary>
 		/// <param name="obj">The object to compare with.</param>
 		/// <returns>true if the object is a Result and equals this instance; otherwise, false.</returns>
-		public override bool Equals(object obj) =>
+		public override bool Equals(object? obj) =>
 			obj is Result<T,E> other && Equals(other);
 
 		public static bool operator ==(Result<T,E> left, Result<T,E> right) => left.Equals(right);
