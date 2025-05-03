@@ -125,7 +125,20 @@ namespace Ave.Extensions.Functional
 		public override bool Equals(object? obj) =>
 			obj is Result<T,E> other && Equals(other);
 
+		/// <summary>
+		/// Determines whether two Result instances are equal.
+		/// </summary>
+		/// <param name="left">The first Result to compare.</param>
+		/// <param name="right">The second Result to compare.</param>
+		/// <returns>true if the Result instances are equal; otherwise, false.</returns>
 		public static bool operator ==(Result<T,E> left, Result<T,E> right) => left.Equals(right);
+
+		/// <summary>
+		/// Determines whether two Result instances are not equal.
+		/// </summary>
+		/// <param name="left">The first Result to compare.</param>
+		/// <param name="right">The second Result to compare.</param>
+		/// <returns>true if the Result instances are not equal; otherwise, false.</returns>
 		public static bool operator !=(Result<T,E> left, Result<T,E> right) => !left.Equals(right);
 	}
 }

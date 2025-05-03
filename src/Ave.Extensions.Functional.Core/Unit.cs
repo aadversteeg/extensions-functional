@@ -7,8 +7,15 @@ namespace Ave.Extensions.Functional
     {
         private static readonly Unit _value = new Unit();
 
+        /// <summary>
+        /// Gets the singleton instance of the Unit struct.
+        /// </summary>
         public static Unit Value => _value;
 
+        /// <summary>
+        /// Returns a string representation of the Unit.
+        /// </summary>
+        /// <returns>A string representation of the Unit, which is "()".</returns>
         public override string ToString() => "()";
     }
 } 

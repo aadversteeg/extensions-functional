@@ -7,6 +7,8 @@
     <Description>Core functional programming types and utilities for .NET applications</Description>
     <PackageTags>functional;maybe;result;monads;option</PackageTags>
     <Nullable>annotations</Nullable>
+    <!-- Generate XML documentation files -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
 </Project>
