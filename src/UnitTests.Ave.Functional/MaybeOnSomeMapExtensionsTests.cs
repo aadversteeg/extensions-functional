@@ -120,5 +120,61 @@ namespace UnitTests.Ave.Functional
 			// assert
 			mappedMaybe.Should().HaveNoValue();
 		}
+
+		[Fact(DisplayName = "MOSME-0009: If the map returns null, the mapped maybe should have no value.")]
+		public void MOSME0009()
+		{
+			// arrange
+			var maybe = Maybe<int>.From(42);
+			Func<int, string> map = (v) => null!;
+
+			// act
+			var mappedMaybe = maybe.OnSomeMap(map);
+
+			// assert
+			mappedMaybe.Should().HaveNoValue();
+		}
+
+		[Fact(DisplayName = "MOSME-0010: If the map of an awaitable maybe returns null, the mapped maybe should have no value.")]
+		public async Task MOSME0010()
+		{
+			// arrange
+			var maybe = Task.FromResult(Maybe<int>.From(42));
+			Func<int, string> map = (v) => null!;
+
+			// act
+			var mappedMaybe = await maybe.OnSomeMap(map);
+
+			// assert
+			mappedMaybe.Should().HaveNoValue();
+		}
+
+		[Fact(DisplayName = "MOSME-0011: If the awaitable map returns null, the mapped maybe should have no value.")]
+		public async Task MOSME0011()
+		{
+			// arrange
+			var maybe = Maybe<int>.From(42);
+			Func<int, Task<string>> map = (v) => Task.FromResult<string>(null!);
+
+			// act
+			var mappedMaybe = await maybe.OnSomeMap(map);
+
+			// assert
+			mappedMaybe.Should().HaveNoValue();
+		}
+
+		[Fact(DisplayName = "MOSME-0012: If the awaitable map of an awaitable maybe returns null, the mapped maybe should have no value.")]
+		public async Task MOSME0012()
+		{
+			// arrange
+			var maybe = Task.FromResult(Maybe<int>.From(42));
+			Func<int, Task<string>> map = (v) => Task.FromResult<string>(null!);
+
+			// act
+			var mappedMaybe = await maybe.OnSomeMap(map);
+
+			// assert
+			mappedMaybe.Should().HaveNoValue();
+		}
 	}
 }

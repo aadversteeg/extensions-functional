@@ -44,6 +44,24 @@ result
     .OnFailure(error => DisplayError(error));
 ```
 
+### Maybe and null
+
+Null and None are the same thing. `Maybe.From(null)`, `Maybe<T>.From(null)` and an implicit
+conversion from null all produce `None`, so a `Maybe` that reports `HasValue` never holds a null
+value and `Value` is safe to use once `HasValue` has been checked. A `Nullable<T>` without a value
+is treated as null and also yields `None`.
+
+Only null yields `None`: default values such as `0`, `false` and the empty string are values.
+
+```csharp
+Maybe<string>.From(null).HasNoValue;          // true
+Maybe<string>.From(string.Empty).HasValue;    // true
+Maybe<int>.From(0).HasValue;                  // true
+```
+
+Mapping follows the same rule: if the mapping function returns null, `OnSomeMap` and `OnNoneMap`
+produce `None` rather than a `Maybe` holding null.
+
 ## Development
 
 ### Building

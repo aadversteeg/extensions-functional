@@ -7,6 +7,10 @@ namespace Ave.Extensions.Functional
 	/// This type is particularly useful for representing nullable values of both reference and value types,
 	/// and for functional programming patterns.
 	/// </summary>
+	/// <remarks>
+	/// Null and None are the same thing: no factory or conversion on this type produces a Maybe that
+	/// reports <see cref="HasValue"/> while holding a null value. See <see cref="From"/>.
+	/// </remarks>
 	/// <typeparam name="T">The type of the optional value.</typeparam>
 	public readonly struct Maybe<T>
 	{
@@ -56,10 +60,11 @@ namespace Ave.Extensions.Functional
 		/// <summary>
 		/// Implicitly converts a value of type T to a Maybe{T}.
 		/// </summary>
-		/// <param name="value">The value to convert.</param>
+		/// <param name="value">The value to convert. May be null.</param>
 		/// <remarks>
 		/// This operator enables seamless conversion from values to Maybe instances,
 		/// making it more convenient to work with Maybe types in your code.
+		/// A null value converts to <see cref="None"/>, consistent with <see cref="From"/>.
 		/// </remarks>
 		public static implicit operator Maybe<T>(T? value)
 		{
@@ -68,16 +73,32 @@ namespace Ave.Extensions.Functional
 				return valueAsMaybe;
 			}
 
-			return Maybe.From(value!);
+			return From(value);
 		}
 
 		/// <summary>
-		/// Creates a new Maybe instance containing the specified value.
+		/// Creates a Maybe instance for the specified value.
 		/// </summary>
-		/// <param name="source">The value to wrap in a Maybe instance.</param>
-		/// <returns>A new Maybe instance containing the specified value.</returns>
+		/// <param name="source">The value to wrap in a Maybe instance. May be null.</param>
+		/// <returns>
+		/// <see cref="None"/> if <paramref name="source"/> is null; otherwise a Maybe instance
+		/// containing the specified value.
+		/// </returns>
+		/// <remarks>
+		/// A null source yields None rather than a Maybe that has a null value. This is what
+		/// guarantees the invariant that <see cref="HasValue"/> implies a non-null
+		/// <see cref="Value"/>. For a Nullable&lt;T&gt; source, a Nullable without a value is
+		/// null once boxed and therefore also yields None.
+		/// Note that only null yields None: default values such as 0, false and the empty
+		/// string are values and yield a Maybe that has a value.
+		/// </remarks>
 		public static Maybe<T> From(T? source)
 		{
+			if (source is null)
+			{
+				return None;
+			}
+
 			return new Maybe<T>(true, source);
 		}
 
@@ -103,11 +124,14 @@ namespace Ave.Extensions.Functional
 	public readonly struct Maybe
 	{
 		/// <summary>
-		/// Creates a new Maybe instance containing the specified value.
+		/// Creates a Maybe instance for the specified value.
 		/// </summary>
 		/// <typeparam name="T">The type of the value to wrap in a Maybe.</typeparam>
-		/// <param name="value">The value to wrap in a Maybe instance.</param>
-		/// <returns>A new Maybe instance containing the specified value.</returns>
+		/// <param name="value">The value to wrap in a Maybe instance. May be null.</param>
+		/// <returns>
+		/// <see cref="Maybe{T}.None"/> if <paramref name="value"/> is null; otherwise a Maybe
+		/// instance containing the specified value.
+		/// </returns>
 		public static Maybe<T> From<T>(T? value) => Maybe<T>.From(value);
 	}
 }
