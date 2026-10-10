@@ -26,7 +26,7 @@
     
     <!-- Version placeholder - will be replaced by build pipeline -->
     <VersionPrefix>0.1.0</VersionPrefix>
-    <VersionSuffix>preview.1</VersionSuffix>
+    <VersionSuffix>preview.2</VersionSuffix>
   </PropertyGroup>
   
   <!-- Source Link for improved debugging experience -->
