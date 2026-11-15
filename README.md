@@ -62,6 +62,35 @@ Maybe<int>.From(0).HasValue;                  // true
 Mapping follows the same rule: if the mapping function returns null, `OnSomeMap` and `OnNoneMap`
 produce `None` rather than a `Maybe` holding null.
 
+### Mapping a list: TraverseAll
+
+`TraverseAll` applies a function that returns a `Result` to every item of a sequence. If every item
+succeeds, you get all values, in input order. If one or more items fail, you get one error: the
+`combine` function receives every error, in input order, and turns them into one.
+
+Every item is visited, also after a failure. That is the difference with a loop that stops at the
+first error: a caller that validates a list hears about all problems at once.
+
+```csharp
+Result<int, string> Parse(string text) =>
+    int.TryParse(text, out var number)
+        ? Result<int, string>.Success(number)
+        : Result<int, string>.Failure($"'{text}' is not a number");
+
+var ok = new[] { "3", "1", "2" }.TraverseAll(Parse, errors => string.Join("; ", errors));
+// ok.Value: [3, 1, 2]
+
+var bad = new[] { "a", "1", "b" }.TraverseAll(Parse, errors => string.Join("; ", errors));
+// bad.Error: "'a' is not a number; 'b' is not a number"
+```
+
+- An empty sequence succeeds with an empty list.
+- `combine` is called only when something failed; a single failure arrives as a list of one.
+- The function may be asynchronous (`Func<T, Task<Result<TOut, E>>>`). The items are then mapped one
+  after the other, never in parallel.
+- `Ave.Extensions.ErrorPaths.Functional` adds an overload for its `Error` type that needs no
+  `combine`: it collects the errors with `Errors.Aggregate`.
+
 ## Development
 
 ### Building
