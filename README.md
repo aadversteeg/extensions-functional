@@ -91,6 +91,29 @@ var bad = new[] { "a", "1", "b" }.TraverseAll(Parse, errors => string.Join("; ",
 - `Ave.Extensions.ErrorPaths.Functional` adds an overload for its `Error` type that needs no
   `combine`: it collects the errors with `Errors.Aggregate`.
 
+### Keeping earlier values: OnSuccessCombine
+
+`OnSuccessCombine` works like `OnSuccessBind`: the next step runs only on success, and the first
+error is returned unchanged. The difference is that the earlier values are kept. The success value
+grows into a tuple, so a later step can use several earlier values without nesting:
+
+```csharp
+Result<TrueTypeFont, string> ReadFont(string directory) =>
+    ReadHead(directory)
+        .OnSuccessCombine(head => ReadHhea(directory))                    // Result<(Head, Hhea), string>
+        .OnSuccessCombine((head, hhea) => ReadMaxp(directory))            // Result<(Head, Hhea, Maxp), string>
+        .OnSuccessCombine((head, hhea, maxp) => ReadHmtx(directory, hhea.NumberOfHMetrics, maxp.GlyphCount))
+        .OnSuccessMap((head, hhea, maxp, hmtx) => new TrueTypeFont(head, hhea, maxp, hmtx));
+```
+
+- A chain holds up to 6 values.
+- For a `Result` holding a tuple of 2 to 6 values, `OnSuccessMap`, `OnSuccessBind`, `OnSuccessDo`
+  and `Match` also accept a function that takes the values as separate parameters, as in the last
+  line above. A function with one parameter still receives the whole tuple.
+- `OnSuccessCombine` and the tuple forms of `OnSuccessMap`, `OnSuccessBind` and `OnSuccessDo` have
+  the same asynchronous forms as `OnSuccessBind`: the source may be a `Task<Result<…>>` and the step
+  may return a `Task`. The tuple form of `Match`, like `Match` itself, accepts a `Task<Result<…>>`.
+
 ## Development
 
 ### Building
