@@ -1,3 +1,11 @@
+> [!IMPORTANT]
+> **This repository is archived and read-only.** The code moved to
+> [aadversteeg/dotnet-extensions](https://github.com/aadversteeg/dotnet-extensions), folder
+> [`libs/functional`](https://github.com/aadversteeg/dotnet-extensions/tree/main/libs/functional).
+> Development, issues and releases continue there.
+>
+> The NuGet packages keep their names (`Ave.Extensions.Functional.*`). New versions are released from the new repository.
+
 # Ave.Extensions.Functional
 
 Functional programming extensions and utilities for .NET applications.
